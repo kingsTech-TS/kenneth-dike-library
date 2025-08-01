@@ -14,6 +14,8 @@ export default function HomePage() {
       <main>
         <Hero />
         <HistorySection />
+        <Announcements />
+        <LibraryHours />
       </main>
       <Footer />
       <ScrollToTop />
