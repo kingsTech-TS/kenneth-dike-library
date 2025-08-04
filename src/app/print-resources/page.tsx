@@ -1,56 +1,100 @@
 "use client"
 
-import { useState, useEffect } from "react"
-import { Building2, BookOpen, MapPin, Users, Clock, Info, ChevronDown, Calendar, ArrowUp } from "lucide-react"
+
+import { useEffect, useState, useRef } from "react"
+import { Building2, BookOpen, MapPin, Users, Clock, Info, ChevronDown, ArrowUp } from "lucide-react"
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
+import { Badge } from "@/components/ui/badge"
 import Header from "@/components/header"
-import { motion, useScroll, useSpring } from "framer-motion"
+import { motion, AnimatePresence, useScroll, useSpring } from "framer-motion"
 import Footer from "@/components/footer"
 
+
+
+
+
+type OpeningHours = {
+  session: {
+    weekdays: string
+    saturday: string
+    sunday: string
+  }
+  vacation: {
+    weekdays: string
+    saturday: string
+  }
+}
+
+type Subject = { code: string; area: string }
+
+type Wing = {
+  wing: string
+  title?: string
+  description?: string
+  capacity?: string
+  facilities?: string[]
+  collections?: string[]
+  subjects?: Subject[]
+}
+
+type Floor = {
+  floor: string
+  wings: Wing[]
+  color?: string
+  bgColor?: string
+}
+
 export default function PrintResourcesPage() {
-  const [activeFloor, setActiveFloor] = useState(0)
-  const [showScrollTop, setShowScrollTop] = useState(false)
   const [isLoaded, setIsLoaded] = useState(false)
+  const [activeFloor, setActiveFloor] = useState<number>(0)
+  const [showScrollTop, setShowScrollTop] = useState(false)
+  const floorRef = useRef<HTMLDivElement | null>(null)
 
   useEffect(() => {
-    setIsLoaded(true)
+    const timeout = setTimeout(() => setIsLoaded(true), 100)
+    return () => clearTimeout(timeout)
+  }, [])
 
+  const scrollToFloor = (index: number) => {
+    const el = document.getElementById(`floor-${index}`)
+    if (el) {
+      el.scrollIntoView({ behavior: "smooth", block: "start" })
+    }
+  }
+
+  const scrollToTop = () => {
+    window.scrollTo({ top: 0, behavior: "smooth" })
+  }
+
+  useEffect(() => {
     const handleScroll = () => {
-      setShowScrollTop(window.scrollY > 400)
+      const scrollY = window.scrollY
+      setShowScrollTop(scrollY > 300)
+
+      const floorOffsets = floorData.map((_, index) => {
+        const el = document.getElementById(`floor-${index}`)
+        return el ? el.offsetTop : 0
+      })
+
+      for (let i = 0; i < floorOffsets.length; i++) {
+        if (scrollY + 200 < floorOffsets[i]) {
+          setActiveFloor(i === 0 ? 0 : i - 1)
+          break
+        } else if (i === floorOffsets.length - 1) {
+          setActiveFloor(i)
+        }
+      }
     }
 
     window.addEventListener("scroll", handleScroll)
     return () => window.removeEventListener("scroll", handleScroll)
   }, [])
 
-  const scrollToTop = () => {
-    window.scrollTo({ top: 0, behavior: "smooth" })
-  }
-
-  const scrollToFloor = (floorIndex: number) => {
-    const element = document.getElementById(`floor-${floorIndex}`)
-    if (element) {
-      element.scrollIntoView({ behavior: "smooth", block: "start" })
-      setActiveFloor(floorIndex)
-    }
-  }
-
-  const openingHours = {
-    session: {
-      weekdays: "Monday to Friday – 8:00 a.m - 10:00 p.m",
-      saturday: "Saturday – 8:00 a.m - 1:00 p.m",
-      sunday: "Sunday – 5:00 p.m - 10:00 p.m",
-    },
-    vacation: {
-      weekdays: "Monday to Friday – 8:00 a.m - 6:00 p.m",
-      saturday: "Saturday – 8:00 a.m - 1:00 p.m",
-    },
-  }
-
-  const floorData = [
+  const floorData: Floor[] = [
     {
       floor: "Ground Floor",
-      color: "from-emerald-500 to-teal-600",
-      bgColor: "bg-emerald-50",
+      bgColor: "bg-purple-600",
+      color: "from-purple-700 to-pink-600",
       wings: [
         {
           wing: "West Wing",
@@ -84,8 +128,8 @@ export default function PrintResourcesPage() {
     },
     {
       floor: "1st Floor",
-      color: "from-blue-500 to-indigo-600",
-      bgColor: "bg-blue-50",
+      color: "from-indigo-700 to-sky-600",
+      bgColor: "bg-indigo-600",
       wings: [
         {
           wing: "West Wing",
@@ -108,8 +152,8 @@ export default function PrintResourcesPage() {
     },
     {
       floor: "2nd Floor",
-      color: "from-purple-500 to-pink-600",
-      bgColor: "bg-purple-50",
+      color: "from-blue-700 to-cyan-600",
+      bgColor: "bg-blue-600",
       wings: [
         {
           wing: "West Wing",
@@ -123,69 +167,25 @@ export default function PrintResourcesPage() {
           ],
           subjects: [
             { code: "R", area: "Medicine" },
-            { code: "RA", area: "Public Aspects of Medicine, Public Health, Hygiene, Preventive Medicine, Toxicology" },
-            { code: "RB", area: "Pathology" },
+            { code: "RA", area: "Public Health" },
             { code: "RC", area: "Internal Medicine" },
-            { code: "RD", area: "Surgery" },
-            { code: "RE", area: "Ophthalmology" },
-            { code: "RF", area: "Otorhinolaryngology (Ear, Nose and Throat)" },
-            { code: "RG", area: "Gynecology and Obstetrics" },
-            { code: "RJ", area: "Pediatrics" },
-            { code: "RK", area: "Dentistry" },
-            { code: "RM", area: "Therapeutics, Pharmacology" },
-            { code: "RS", area: "Pharmacy and Material Medical" },
-            { code: "RT", area: "Nursing" },
-            { code: "S", area: "Agriculture" },
-            { code: "SB", area: "Plant Culture" },
-            { code: "SD", area: "Forestry" },
-            { code: "SF", area: "Animal Culture" },
-            { code: "SH", area: "Aquaculture, Fisheries, Angling" },
-            { code: "SK", area: "Hunting Sports" },
-            { code: "L", area: "Education" },
           ],
         },
         {
           wing: "East Wing",
-          facilities: [
-            "Reading Room (Seating Capacity (55))",
-            "Book Shelves",
-            "Office of the Deputy University Librarian (DUL) Special Collections",
-          ],
+          facilities: ["Reading Room", "Book Shelves", "Office of the Deputy Librarian"],
           subjects: [
             { code: "A", area: "General Works" },
-            { code: "AC", area: "Collections, Series, Collected Works" },
-            { code: "AE", area: "Encyclopedia" },
-            { code: "AM", area: "Museums" },
-            { code: "AS", area: "Societies, Academics" },
-            { code: "AZ", area: "General History of Scholarship and Learning" },
-            { code: "B", area: "Philosophy (General)" },
-            { code: "BC", area: "Logic" },
-            {
-              code: "BD",
-              area: "Philosophical Works, Metaphysics, Epistemology, Theory of Knowledge, Methodology, Ontology, Cosmology",
-            },
-            { code: "BJ", area: "Ethics" },
-            { code: "BL", area: "Religions, Mythology, Rationalism, Hinduism" },
-            { code: "BM", area: "Judaism" },
-            { code: "BP", area: "Islam and Bahai Faith" },
-            { code: "BQ", area: "Buddhism" },
+            { code: "B", area: "Philosophy" },
             { code: "BR", area: "Christianity" },
-            { code: "BS", area: "Bible and Exegesis" },
-            { code: "BT", area: "Doctrinal Theology" },
-            { code: "BV", area: "Practical Theology" },
-            { code: "BX", area: "Christian Dominations" },
-            { code: "C", area: "Auxiliary Sciences of History (General)" },
-            { code: "CB", area: "History of Civilization" },
-            { code: "CD", area: "Diplomatic, Archives and Seals" },
-            { code: "CT", area: "Biography" },
           ],
         },
       ],
     },
     {
       floor: "3rd Floor",
-      color: "from-orange-500 to-red-600",
-      bgColor: "bg-orange-50",
+      color: "from-fuchsia-700 to-rose-600",
+      bgColor: "bg-fuchsia-600",
       wings: [
         {
           wing: "West Wing",
@@ -193,36 +193,10 @@ export default function PrintResourcesPage() {
         },
         {
           wing: "East Wing",
-          facilities: ["Reading Room – Seating Capacity (55)", "Book Shelves"],
+          facilities: ["Reading Room", "Book Shelves"],
           subjects: [
-            { code: "CC", area: "Archaeology" },
-            { code: "QN", area: "Anthropology" },
-            { code: "Q", area: "Science (General)" },
-            { code: "QA", area: "Mathematics" },
-            { code: "QC", area: "Physics" },
-            { code: "QD", area: "Chemistry" },
-            { code: "QE", area: "Geology" },
-            { code: "QH", area: "Natural History – Biology" },
-            { code: "QK", area: "Botany" },
-            { code: "QL", area: "Zoology" },
-            { code: "QM", area: "Human Anatomy" },
-            { code: "QP", area: "Physiology" },
-            { code: "QR", area: "Microbiology" },
-            { code: "T", area: "Technology (General)" },
-            { code: "TA", area: "Engineering (General) Civil Engineering" },
-            { code: "TC", area: "Hydraulic Engineering" },
-            { code: "TD", area: "Environment Technology Sanitary Engineering" },
-            { code: "TE", area: "Highway Engineering Roads/Pavement" },
-            { code: "TF", area: "Railroad Engineering and Operations" },
-            { code: "TH", area: "Building Construction" },
-            { code: "TJ", area: "Mechanical Engineering and Machinery" },
-            { code: "TK", area: "Electrical Engineering Electronics, Nuclear Engineering" },
-            { code: "TL", area: "Motor, Vehicles, Aeronautics, Astronautics" },
-            { code: "TN", area: "Mining Engineering Metallurgy" },
-            { code: "TP", area: "Chemical Technology" },
-            { code: "TR", area: "Photography" },
-            { code: "TS", area: "Manufacturer" },
-            { code: "TT", area: "Handcrafts, Arts and Crafts" },
+            { code: "Q", area: "Science" },
+            { code: "T", area: "Technology" },
             { code: "TX", area: "Home Economics" },
           ],
         },
@@ -230,8 +204,8 @@ export default function PrintResourcesPage() {
     },
     {
       floor: "4th Floor",
-      color: "from-violet-500 to-purple-600",
-      bgColor: "bg-violet-50",
+      color: "from-amber-700 to-orange-600",
+      bgColor: "bg-amber-600",
       wings: [
         {
           wing: "West Wing",
