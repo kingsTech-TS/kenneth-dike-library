@@ -26,6 +26,7 @@ interface AdminLayoutProps {
 export default function Sidebar({ children }: AdminLayoutProps) {
   const [isAuthenticated, setIsAuthenticated] = useState<boolean | null>(null)
   const [sidebarOpen, setSidebarOpen] = useState(false)
+  const [collapsed, setCollapsed] = useState(false) // collapse sidebar desktop
   const router = useRouter()
   const pathname = usePathname()
 
@@ -85,6 +86,8 @@ export default function Sidebar({ children }: AdminLayoutProps) {
     { name: "E-Resources", href: "/admin/resources", icon: Database },
   ]
 
+  const currentNavItem = navigation.find((item) => item.href === pathname)
+
   return (
     <div className="min-h-screen bg-gray-50 flex flex-col">
       {/* Header */}
@@ -103,6 +106,15 @@ export default function Sidebar({ children }: AdminLayoutProps) {
               <p className="text-gray-600 text-sm">Kenneth Dike Library Management</p>
             </div>
           </div>
+
+          {/* Topbar: Active Page Icon */}
+          {currentNavItem && (
+            <div className="hidden lg:flex items-center gap-2 text-sm text-gray-600">
+              <currentNavItem.icon className="w-5 h-5 text-blue-500" />
+              <span className="font-medium">{currentNavItem.name}</span>
+            </div>
+          )}
+
           <Button
             onClick={handleLogout}
             variant="outline"
@@ -117,11 +129,19 @@ export default function Sidebar({ children }: AdminLayoutProps) {
       <div className="flex flex-1">
         {/* Sidebar */}
         <nav
-          className={`fixed top-0 left-0 h-full w-64 bg-white shadow-md z-40 lg:static transform transition-transform duration-300 ease-in-out ${
-            sidebarOpen ? "translate-x-0" : "-translate-x-full lg:translate-x-0"
-          }`}
+          className={`fixed top-0 right-0 h-full lg:left-0 lg:right-auto bg-white shadow-md z-40 transform transition-transform duration-300 ease-in-out
+            ${sidebarOpen ? "translate-x-0" : "translate-x-full lg:translate-x-0"}
+            ${collapsed ? "lg:w-20" : "lg:w-64"} w-64`}
         >
-          <div className="pt-24 lg:pt-6 p-6 space-y-2">
+          <div className="pt-24 lg:pt-6 p-4 space-y-2">
+            {/* Collapse Toggle */}
+            <button
+              onClick={() => setCollapsed(!collapsed)}
+              className="hidden lg:flex items-center justify-center w-full py-2 px-3 rounded-md text-sm bg-gray-100 hover:bg-gray-200 text-gray-700"
+            >
+              {collapsed ? "→ Expand" : "← Collapse"}
+            </button>
+
             {navigation.map((item) => {
               const isActive = pathname === item.href
               return (
@@ -129,21 +149,23 @@ export default function Sidebar({ children }: AdminLayoutProps) {
                   key={item.name}
                   href={item.href}
                   onClick={() => setSidebarOpen(false)}
-                  className={`flex items-center gap-3 px-4 py-3 rounded-lg transition-colors ${
+                  className={`flex items-center ${
+                    collapsed ? "justify-center" : "justify-start gap-3"
+                  } px-4 py-3 rounded-lg transition-colors ${
                     isActive
                       ? "bg-blue-100 text-blue-700 font-medium"
                       : "text-gray-600 hover:bg-gray-100 hover:text-gray-900"
                   }`}
                 >
                   <item.icon className="h-5 w-5" />
-                  {item.name}
+                  {!collapsed && item.name}
                 </Link>
               )
             })}
           </div>
         </nav>
 
-        {/* Overlay */}
+        {/* Overlay for mobile */}
         {sidebarOpen && (
           <div
             className="fixed inset-0 bg-black bg-opacity-50 z-30 lg:hidden"
@@ -152,7 +174,9 @@ export default function Sidebar({ children }: AdminLayoutProps) {
         )}
 
         {/* Main Content */}
-        <main className="flex-1 p-6 lg:ml-64">{children}</main>
+        <main className={`flex-1 p-6 transition-all duration-300 ${collapsed ? "lg:ml-20" : "lg:ml-64"}`}>
+          {children}
+        </main>
       </div>
     </div>
   )
